@@ -1,0 +1,22 @@
+entity Agent {
+  login String required,
+  balance Long required
+}
+
+entity Payment {
+  account String required,
+  amount Long required,
+  commissionAmount Long,
+  totalAmount Long,
+  status PaymentStatus required,
+  createdDate Instant
+}
+
+enum PaymentStatus {
+  PAID,
+  FAILED
+}
+
+relationship ManyToOne {
+  Payment{agent} to Agent
+}

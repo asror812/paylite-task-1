@@ -1,0 +1,22 @@
+{
+  "annotations": {
+    "changelogDate": "20260929131853"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "login",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "balance",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "Agent",
+  "relationships": [],
+  "searchEngine": "no",
+  "skipClient": true
+}
