@@ -31,7 +31,7 @@ class PaymentTest {
         payment.setAgent(agentBack);
         assertThat(payment.getAgent()).isEqualTo(agentBack);
 
-        payment.agent(null);
+        payment.setAgent(null);
         assertThat(payment.getAgent()).isNull();
     }
 }

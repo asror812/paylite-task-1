@@ -73,7 +73,7 @@ class AgentResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Agent createEntity() {
-        return new Agent().login(DEFAULT_LOGIN).balance(DEFAULT_BALANCE);
+        return Agent.builder().login(DEFAULT_LOGIN).balance(DEFAULT_BALANCE).build();
     }
 
     /**
@@ -83,7 +83,7 @@ class AgentResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Agent createUpdatedEntity() {
-        return new Agent().login(UPDATED_LOGIN).balance(UPDATED_BALANCE);
+        return Agent.builder().login(UPDATED_LOGIN).balance(UPDATED_BALANCE).build();
     }
 
     @BeforeEach
@@ -226,7 +226,8 @@ class AgentResourceIT {
         Agent updatedAgent = agentRepository.findById(agent.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedAgent are not directly saved in db
         em.detach(updatedAgent);
-        updatedAgent.login(UPDATED_LOGIN).balance(UPDATED_BALANCE);
+        updatedAgent.setLogin(UPDATED_LOGIN);
+        updatedAgent.setBalance(UPDATED_BALANCE);
         AgentDTO agentDTO = agentMapper.toDto(updatedAgent);
 
         restAgentMockMvc
@@ -319,7 +320,7 @@ class AgentResourceIT {
         Agent partialUpdatedAgent = new Agent();
         partialUpdatedAgent.setId(agent.getId());
 
-        partialUpdatedAgent.login(UPDATED_LOGIN);
+        partialUpdatedAgent.setLogin(UPDATED_LOGIN);
 
         restAgentMockMvc
             .perform(
@@ -348,7 +349,8 @@ class AgentResourceIT {
         Agent partialUpdatedAgent = new Agent();
         partialUpdatedAgent.setId(agent.getId());
 
-        partialUpdatedAgent.login(UPDATED_LOGIN).balance(UPDATED_BALANCE);
+        partialUpdatedAgent.setLogin(UPDATED_LOGIN);
+        partialUpdatedAgent.setBalance(UPDATED_BALANCE);
 
         restAgentMockMvc
             .perform(

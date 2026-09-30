@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,11 @@ import tech.jhipster.web.util.HeaderUtil;
  * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807).
  */
 @ControllerAdvice
+@RequiredArgsConstructor
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
+
+    @Value("${jhipster.clientApp.name}")
+    private String applicationName;
 
     private static final String FIELD_ERRORS_KEY = "fieldErrors";
     private static final String MESSAGE_KEY = "message";
@@ -51,15 +56,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     private static final boolean CASUAL_CHAIN_ENABLED = false;
 
     private static final Logger LOG = LoggerFactory.getLogger(ExceptionTranslator.class);
-
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
-
     private final Environment env;
-
-    public ExceptionTranslator(Environment env) {
-        this.env = env;
-    }
 
     @ExceptionHandler
     public ResponseEntity<Object> handleAnyException(Throwable ex, NativeWebRequest request) {
@@ -72,7 +69,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
         Exception ex,
-        @Nullable Object body,
+        Object body,
         HttpHeaders headers,
         HttpStatusCode statusCode,
         WebRequest request

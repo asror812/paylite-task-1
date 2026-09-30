@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * A Agent.
@@ -14,7 +13,10 @@ import lombok.Setter;
 @Table(name = "agent")
 @Getter
 @Setter
+@Builder
 @SuppressWarnings("common-java:DuplicatedBlocks")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Agent implements Serializable {
 
     @Serial

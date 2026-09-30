@@ -7,15 +7,12 @@ import com.devops.paylite.domain.enumeration.PaymentStatus;
 import com.devops.paylite.repository.AgentRepository;
 import com.devops.paylite.repository.PaymentRepository;
 import com.devops.paylite.security.SecurityUtils;
-import com.devops.paylite.service.dto.BalanceResponseDto;
 import com.devops.paylite.service.dto.PaymentCreateRequestDto;
 import com.devops.paylite.service.dto.PaymentDTO;
-import com.devops.paylite.service.dto.TopUpRequestDto;
 import com.devops.paylite.service.mapper.PaymentMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +38,12 @@ public class PaymentService {
     /**
      * Save a payment.
      *
-     * @param dto the entity to save.
+     * @param dto the entity to create.
      * @return the persisted entity.
      */
     @Transactional
-    public PaymentDTO save(PaymentCreateRequestDto dto) {
-        LOG.debug("Request to save Payment : {}", dto);
+    public PaymentDTO create(PaymentCreateRequestDto dto) {
+        LOG.debug("Request to create Payment : {}", dto);
 
         String login = SecurityUtils.getCurrentUserLogin()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user login not found"));
@@ -88,7 +85,7 @@ public class PaymentService {
     /**
      * Update a payment.
      *
-     * @param paymentDTO the entity to save.
+     * @param paymentDTO the entity to create.
      * @return the persisted entity.
      */
     @Transactional

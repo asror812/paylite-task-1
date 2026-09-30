@@ -28,7 +28,6 @@ public class AgentService {
     private static final Logger LOG = LoggerFactory.getLogger(AgentService.class);
 
     private final AgentRepository agentRepository;
-    private final AgentMapper agentMapper;
 
     public BalanceResponseDto getOwnBalance() {
         String login = SecurityUtils.getCurrentUserLogin()
@@ -48,18 +47,5 @@ public class AgentService {
 
         agent.setBalance(agent.getBalance() + dto.amount());
         agentRepository.save(agent);
-    }
-
-    /**
-     * Update a agent.
-     *
-     * @param agentDTO the entity to save.
-     * @return the persisted entity.
-     */
-    public AgentDTO update(AgentDTO agentDTO) {
-        LOG.debug("Request to update Agent : {}", agentDTO);
-        Agent agent = agentMapper.toEntity(agentDTO);
-        agent = agentRepository.save(agent);
-        return agentMapper.toDto(agent);
     }
 }

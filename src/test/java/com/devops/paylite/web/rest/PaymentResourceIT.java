@@ -88,13 +88,14 @@ class PaymentResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Payment createEntity() {
-        return new Payment()
+        return Payment.builder()
             .account(DEFAULT_ACCOUNT)
             .amount(DEFAULT_AMOUNT)
             .commissionAmount(DEFAULT_COMMISSION_AMOUNT)
             .totalAmount(DEFAULT_TOTAL_AMOUNT)
             .status(DEFAULT_STATUS)
-            .createdDate(DEFAULT_CREATED_DATE);
+            .createdDate(DEFAULT_CREATED_DATE)
+            .build();
     }
 
     /**
@@ -104,13 +105,14 @@ class PaymentResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Payment createUpdatedEntity() {
-        return new Payment()
+        return Payment.builder()
             .account(UPDATED_ACCOUNT)
             .amount(UPDATED_AMOUNT)
             .commissionAmount(UPDATED_COMMISSION_AMOUNT)
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .status(UPDATED_STATUS)
-            .createdDate(UPDATED_CREATED_DATE);
+            .createdDate(UPDATED_CREATED_DATE)
+            .build();
     }
 
     @BeforeEach
@@ -280,13 +282,12 @@ class PaymentResourceIT {
         Payment updatedPayment = paymentRepository.findById(payment.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedPayment are not directly saved in db
         em.detach(updatedPayment);
-        updatedPayment
-            .account(UPDATED_ACCOUNT)
-            .amount(UPDATED_AMOUNT)
-            .commissionAmount(UPDATED_COMMISSION_AMOUNT)
-            .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .status(UPDATED_STATUS)
-            .createdDate(UPDATED_CREATED_DATE);
+        updatedPayment.setAccount(UPDATED_ACCOUNT);
+        updatedPayment.setAmount(UPDATED_AMOUNT);
+        updatedPayment.setCommissionAmount(UPDATED_COMMISSION_AMOUNT);
+        updatedPayment.setTotalAmount(UPDATED_TOTAL_AMOUNT);
+        updatedPayment.setStatus(UPDATED_STATUS);
+        updatedPayment.setCreatedDate(UPDATED_CREATED_DATE);
         PaymentDTO paymentDTO = paymentMapper.toDto(updatedPayment);
 
         restPaymentMockMvc
@@ -379,10 +380,9 @@ class PaymentResourceIT {
         Payment partialUpdatedPayment = new Payment();
         partialUpdatedPayment.setId(payment.getId());
 
-        partialUpdatedPayment
-            .commissionAmount(UPDATED_COMMISSION_AMOUNT)
-            .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .createdDate(UPDATED_CREATED_DATE);
+        partialUpdatedPayment.setCommissionAmount(UPDATED_COMMISSION_AMOUNT);
+        partialUpdatedPayment.setTotalAmount(UPDATED_TOTAL_AMOUNT);
+        partialUpdatedPayment.setCreatedDate(UPDATED_CREATED_DATE);
 
         restPaymentMockMvc
             .perform(
@@ -411,13 +411,12 @@ class PaymentResourceIT {
         Payment partialUpdatedPayment = new Payment();
         partialUpdatedPayment.setId(payment.getId());
 
-        partialUpdatedPayment
-            .account(UPDATED_ACCOUNT)
-            .amount(UPDATED_AMOUNT)
-            .commissionAmount(UPDATED_COMMISSION_AMOUNT)
-            .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .status(UPDATED_STATUS)
-            .createdDate(UPDATED_CREATED_DATE);
+        partialUpdatedPayment.setAccount(UPDATED_ACCOUNT);
+        partialUpdatedPayment.setAmount(UPDATED_AMOUNT);
+        partialUpdatedPayment.setCommissionAmount(UPDATED_COMMISSION_AMOUNT);
+        partialUpdatedPayment.setTotalAmount(UPDATED_TOTAL_AMOUNT);
+        partialUpdatedPayment.setStatus(UPDATED_STATUS);
+        partialUpdatedPayment.setCreatedDate(UPDATED_CREATED_DATE);
 
         restPaymentMockMvc
             .perform(

@@ -1,20 +1,12 @@
 package com.devops.paylite.web.rest;
 
 import com.devops.paylite.domain.enumeration.PaymentStatus;
-import com.devops.paylite.repository.PaymentRepository;
 import com.devops.paylite.service.PaymentService;
-import com.devops.paylite.service.dto.BalanceResponseDto;
 import com.devops.paylite.service.dto.PaymentCreateRequestDto;
 import com.devops.paylite.service.dto.PaymentDTO;
-import com.devops.paylite.service.dto.TopUpRequestDto;
-import com.devops.paylite.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,16 +14,11 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -55,9 +42,9 @@ public class PaymentResource {
     @PreAuthorize("hasAuthority('ROLE_AGENT')")
     @PostMapping
     public ResponseEntity<PaymentDTO> createPayment(@Valid @RequestBody PaymentCreateRequestDto createDto) throws URISyntaxException {
-        LOG.debug("REST request to save Payment : {}", createDto);
+        LOG.debug("REST request to create Payment : {}", createDto);
 
-        PaymentDTO paymentDTO = paymentService.save(createDto);
+        PaymentDTO paymentDTO = paymentService.create(createDto);
 
         if (paymentDTO.getStatus() == PaymentStatus.FAILED) {
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).body(paymentDTO);

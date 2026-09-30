@@ -7,22 +7,23 @@ import java.util.concurrent.atomic.AtomicLong;
 public class PaymentTestSamples {
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
 
     public static Payment getPaymentSample1() {
-        return new Payment().id(1L).account("account1").amount(1L).commissionAmount(1L).totalAmount(1L);
+        return Payment.builder().id(1L).account("account1").amount(1L).commissionAmount(1L).totalAmount(1L).build();
     }
 
     public static Payment getPaymentSample2() {
-        return new Payment().id(2L).account("account2").amount(2L).commissionAmount(2L).totalAmount(2L);
+        return Payment.builder().id(2L).account("account2").amount(2L).commissionAmount(2L).totalAmount(2L).build();
     }
 
     public static Payment getPaymentRandomSampleGenerator() {
-        return new Payment()
+        return Payment.builder()
             .id(longCount.incrementAndGet())
             .account(UUID.randomUUID().toString())
             .amount(longCount.incrementAndGet())
             .commissionAmount(longCount.incrementAndGet())
-            .totalAmount(longCount.incrementAndGet());
+            .totalAmount(longCount.incrementAndGet())
+            .build();
     }
 }
