@@ -37,11 +37,10 @@ public class PaymentDTO implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PaymentDTO)) {
+        if (!(o instanceof PaymentDTO paymentDTO)) {
             return false;
         }
 
-        PaymentDTO paymentDTO = (PaymentDTO) o;
         if (this.id == null) {
             return false;
         }

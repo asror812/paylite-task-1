@@ -7,8 +7,10 @@ import com.devops.paylite.domain.enumeration.PaymentStatus;
 import com.devops.paylite.repository.AgentRepository;
 import com.devops.paylite.repository.PaymentRepository;
 import com.devops.paylite.security.SecurityUtils;
+import com.devops.paylite.service.dto.BalanceResponseDto;
 import com.devops.paylite.service.dto.PaymentCreateRequestDto;
 import com.devops.paylite.service.dto.PaymentDTO;
+import com.devops.paylite.service.dto.TopUpRequestDto;
 import com.devops.paylite.service.mapper.PaymentMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,9 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service Implementation for managing {@link com.devops.paylite.domain.Payment}.
- */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -100,38 +99,6 @@ public class PaymentService {
         return paymentMapper.toDto(payment);
     }
 
-    /**
-     * Partially update a payment.
-     *
-     * @param paymentDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    @Transactional
-    public Optional<PaymentDTO> partialUpdate(PaymentDTO paymentDTO) {
-        LOG.debug("Request to partially update Payment : {}", paymentDTO);
-
-        return paymentRepository
-            .findById(paymentDTO.getId())
-            .map(existingPayment -> {
-                paymentMapper.partialUpdate(existingPayment, paymentDTO);
-
-                return existingPayment;
-            })
-            .map(paymentRepository::save)
-            .map(paymentMapper::toDto);
-    }
-
-    /**
-     * Get all the payments.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    public Page<PaymentDTO> findAll(Pageable pageable) {
-        LOG.debug("Request to get all Payments");
-        return paymentRepository.findAll(pageable).map(paymentMapper::toDto);
-    }
-
     public Page<PaymentDTO> getOwn(Pageable pageable) {
         LOG.debug("Request to get all Own Payments");
 
@@ -143,35 +110,5 @@ public class PaymentService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
 
         return paymentRepository.findAllByAgent_Login(agent.getLogin(), pageable).map(paymentMapper::toDto);
-    }
-
-    /**
-     * Get one payment by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
-     */
-    public Optional<PaymentDTO> findOne(Long id) {
-        LOG.debug("Request to get Payment : {}", id);
-
-        String login = SecurityUtils.getCurrentUserLogin()
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user login not found"));
-
-        Agent agent = agentRepository
-            .findByLogin(login)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
-
-        if (!paymentRepository.findByIdAndAgent_Login(id, agent.getLogin()).isPresent()) {}
-        return paymentRepository.findById(id).map(paymentMapper::toDto);
-    }
-
-    /**
-     * Delete the payment by id.
-     *
-     * @param id the id of the entity.
-     */
-    public void delete(Long id) {
-        LOG.debug("Request to delete Payment : {}", id);
-        paymentRepository.deleteById(id);
     }
 }
