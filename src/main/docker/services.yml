@@ -9,3 +9,7 @@ services:
     extends:
       file: ./keycloak.yml
       service: keycloak
+  consul:
+    extends:
+      file: ./consul.yml
+      service: consul

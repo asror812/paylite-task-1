@@ -2,6 +2,7 @@ package com.devops.paylite;
 
 import com.devops.paylite.config.ApplicationProperties;
 import com.devops.paylite.config.CRLFLogConverter;
+import com.devops.paylite.config.PaymentProperties;
 import jakarta.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,7 +21,7 @@ import tech.jhipster.config.DefaultProfileUtil;
 import tech.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
+@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class, PaymentProperties.class })
 public class PayliteApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(PayliteApp.class);

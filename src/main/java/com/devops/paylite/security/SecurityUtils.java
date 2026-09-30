@@ -20,9 +20,6 @@ import org.springframework.security.oauth2.core.oidc.StandardClaimNames;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-/**
- * Utility class for Spring Security.
- */
 public final class SecurityUtils {
 
     public static final String CLAIMS_NAMESPACE = "https://www.jhipster.tech/";
@@ -48,6 +45,7 @@ public final class SecurityUtils {
             return (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("preferred_username");
         } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
             Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
+
             if (attributes.containsKey("preferred_username")) {
                 return (String) attributes.get("preferred_username");
             }

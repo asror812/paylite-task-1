@@ -57,6 +57,13 @@
         "attributes": {}
       },
       {
+        "name": "ROLE_AGENT",
+        "description": "Paylite agent role",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
         "id": "e1b19afd-f612-4a79-bdf8-26a99b89b10b",
         "name": "offline_access",
         "description": "${role_offline-access}",
@@ -2254,30 +2261,28 @@
     {
       "id": "c4af4e2f-b432-4c3b-8405-cca86cd5b97b",
       "createdTimestamp": 1505479373742,
-      "username": "user",
+      "username": "agent",
       "enabled": true,
       "totp": false,
       "emailVerified": true,
-      "firstName": "",
-      "lastName": "User",
-      "email": "user@localhost",
+      "firstName": "Paylite",
+      "lastName": "Agent",
+      "email": "agent@localhost",
       "credentials": [
         {
-          "id": "7821832b-1e82-45a2-b8d3-f1a6ad909e64",
           "type": "password",
-          "createdDate": 1505479392766,
-          "secretData": "{\"value\":\"MbKsMgWPnZyImih8s4SaoCSCq+XIY/c6S9F93sXEidHF1TjPWxCqMkec0+o3860CMLXHt3az61cIJOWI0FW9aw==\",\"salt\":\"fmpBI1r8R1u75hDLMUlwBw==\"}",
-          "credentialData": "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+          "value": "agent",
+          "temporary": false
         }
       ],
       "disableableCredentialTypes": [],
       "requiredActions": [],
-      "realmRoles": ["offline_access", "uma_authorization"],
+      "realmRoles": ["ROLE_AGENT", "offline_access", "uma_authorization"],
       "clientRoles": {
         "account": ["view-profile", "manage-account"]
       },
       "notBefore": 0,
-      "groups": ["/Users"]
+      "groups": []
     }
   ]
 }

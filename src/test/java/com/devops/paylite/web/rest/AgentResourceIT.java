@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.devops.paylite.IntegrationTest;
 import com.devops.paylite.domain.Agent;
 import com.devops.paylite.repository.AgentRepository;
+import com.devops.paylite.service.dto.AgentDTO;
+import com.devops.paylite.service.mapper.AgentMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.util.Random;
@@ -50,6 +52,9 @@ class AgentResourceIT {
 
     @Autowired
     private AgentRepository agentRepository;
+
+    @Autowired
+    private AgentMapper agentMapper;
 
     @Autowired
     private EntityManager em;
@@ -99,18 +104,20 @@ class AgentResourceIT {
     void createAgent() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Agent
-        var returnedAgent = om.readValue(
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+        var returnedAgentDTO = om.readValue(
             restAgentMockMvc
-                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agent)))
+                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agentDTO)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
-            Agent.class
+            AgentDTO.class
         );
 
         // Validate the Agent in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedAgent = agentMapper.toEntity(returnedAgentDTO);
         assertAgentUpdatableFieldsEquals(returnedAgent, getPersistedAgent(returnedAgent));
 
         insertedAgent = returnedAgent;
@@ -121,12 +128,13 @@ class AgentResourceIT {
     void createAgentWithExistingId() throws Exception {
         // Create the Agent with an existing ID
         agent.setId(1L);
+        AgentDTO agentDTO = agentMapper.toDto(agent);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAgentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agent)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agentDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Agent in the database
@@ -141,9 +149,10 @@ class AgentResourceIT {
         agent.setLogin(null);
 
         // Create the Agent, which fails.
+        AgentDTO agentDTO = agentMapper.toDto(agent);
 
         restAgentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agent)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agentDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -157,9 +166,10 @@ class AgentResourceIT {
         agent.setBalance(null);
 
         // Create the Agent, which fails.
+        AgentDTO agentDTO = agentMapper.toDto(agent);
 
         restAgentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agent)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agentDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -217,13 +227,14 @@ class AgentResourceIT {
         // Disconnect from session so that the updates on updatedAgent are not directly saved in db
         em.detach(updatedAgent);
         updatedAgent.login(UPDATED_LOGIN).balance(UPDATED_BALANCE);
+        AgentDTO agentDTO = agentMapper.toDto(updatedAgent);
 
         restAgentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedAgent.getId())
+                put(ENTITY_API_URL_ID, agentDTO.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedAgent))
+                    .content(om.writeValueAsBytes(agentDTO))
             )
             .andExpect(status().isOk());
 
@@ -238,13 +249,16 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAgentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, agent.getId())
+                put(ENTITY_API_URL_ID, agentDTO.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(agent))
+                    .content(om.writeValueAsBytes(agentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -258,13 +272,16 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgentMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(agent))
+                    .content(om.writeValueAsBytes(agentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -278,9 +295,12 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgentMockMvc
-            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agent)))
+            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(agentDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Agent in the database
@@ -351,13 +371,16 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAgentMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, agent.getId())
+                patch(ENTITY_API_URL_ID, agentDTO.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(agent))
+                    .content(om.writeValueAsBytes(agentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -371,13 +394,16 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgentMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(agent))
+                    .content(om.writeValueAsBytes(agentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -391,9 +417,12 @@ class AgentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         agent.setId(longCount.incrementAndGet());
 
+        // Create the Agent
+        AgentDTO agentDTO = agentMapper.toDto(agent);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgentMockMvc
-            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(agent)))
+            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(agentDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Agent in the database

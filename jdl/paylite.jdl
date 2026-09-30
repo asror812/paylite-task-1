@@ -1,5 +1,5 @@
 entity Agent {
-  login String required,
+  login String required unique,
   balance Long required
 }
 
@@ -20,3 +20,7 @@ enum PaymentStatus {
 relationship ManyToOne {
   Payment{agent} to Agent
 }
+
+dto Agent, Payment with mapstruct
+service Agent, Payment with serviceClass
+paginate Agent, Payment with pagination

@@ -3,6 +3,7 @@
     "changelogDate": "20260929131854"
   },
   "applications": "*",
+  "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "account",
@@ -34,6 +35,7 @@
     }
   ],
   "name": "Payment",
+  "pagination": "pagination",
   "relationships": [
     {
       "otherEntityName": "agent",
@@ -43,5 +45,6 @@
     }
   ],
   "searchEngine": "no",
+  "service": "serviceClass",
   "skipClient": true
 }

@@ -1,7 +1,8 @@
 package com.devops.paylite.web.rest;
 
-import com.devops.paylite.domain.Agent;
 import com.devops.paylite.repository.AgentRepository;
+import com.devops.paylite.service.AgentService;
+import com.devops.paylite.service.dto.AgentDTO;
 import com.devops.paylite.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -13,10 +14,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -24,7 +29,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/agents")
-@Transactional
 public class AgentResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AgentResource.class);
@@ -34,49 +38,54 @@ public class AgentResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final AgentService agentService;
+
     private final AgentRepository agentRepository;
 
-    public AgentResource(AgentRepository agentRepository) {
+    public AgentResource(AgentService agentService, AgentRepository agentRepository) {
+        this.agentService = agentService;
         this.agentRepository = agentRepository;
     }
 
     /**
      * {@code POST  /agents} : Create a new agent.
      *
-     * @param agent the agent to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new agent, or with status {@code 400 (Bad Request)} if the agent has already an ID.
+     * @param agentDTO the agentDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new agentDTO, or with status {@code 400 (Bad Request)} if the agent has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<Agent> createAgent(@Valid @RequestBody Agent agent) throws URISyntaxException {
-        LOG.debug("REST request to save Agent : {}", agent);
-        if (agent.getId() != null) {
+    public ResponseEntity<AgentDTO> createAgent(@Valid @RequestBody AgentDTO agentDTO) throws URISyntaxException {
+        LOG.debug("REST request to save Agent : {}", agentDTO);
+        if (agentDTO.getId() != null) {
             throw new BadRequestAlertException("A new agent cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        agent = agentRepository.save(agent);
-        return ResponseEntity.created(new URI("/api/agents/" + agent.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, agent.getId().toString()))
-            .body(agent);
+        agentDTO = agentService.save(agentDTO);
+        return ResponseEntity.created(new URI("/api/agents/" + agentDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, agentDTO.getId().toString()))
+            .body(agentDTO);
     }
 
     /**
      * {@code PUT  /agents/:id} : Updates an existing agent.
      *
-     * @param id the id of the agent to save.
-     * @param agent the agent to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated agent,
-     * or with status {@code 400 (Bad Request)} if the agent is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the agent couldn't be updated.
+     * @param id the id of the agentDTO to save.
+     * @param agentDTO the agentDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated agentDTO,
+     * or with status {@code 400 (Bad Request)} if the agentDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the agentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Agent> updateAgent(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody Agent agent)
-        throws URISyntaxException {
-        LOG.debug("REST request to update Agent : {}, {}", id, agent);
-        if (agent.getId() == null) {
+    public ResponseEntity<AgentDTO> updateAgent(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody AgentDTO agentDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to update Agent : {}, {}", id, agentDTO);
+        if (agentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, agent.getId())) {
+        if (!Objects.equals(id, agentDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -84,33 +93,33 @@ public class AgentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        agent = agentRepository.save(agent);
+        agentDTO = agentService.update(agentDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, agent.getId().toString()))
-            .body(agent);
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, agentDTO.getId().toString()))
+            .body(agentDTO);
     }
 
     /**
      * {@code PATCH  /agents/:id} : Partial updates given fields of an existing agent, field will ignore if it is null
      *
-     * @param id the id of the agent to save.
-     * @param agent the agent to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated agent,
-     * or with status {@code 400 (Bad Request)} if the agent is not valid,
-     * or with status {@code 404 (Not Found)} if the agent is not found,
-     * or with status {@code 500 (Internal Server Error)} if the agent couldn't be updated.
+     * @param id the id of the agentDTO to save.
+     * @param agentDTO the agentDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated agentDTO,
+     * or with status {@code 400 (Bad Request)} if the agentDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the agentDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the agentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<Agent> partialUpdateAgent(
+    public ResponseEntity<AgentDTO> partialUpdateAgent(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody Agent agent
+        @NotNull @RequestBody AgentDTO agentDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Agent partially : {}, {}", id, agent);
-        if (agent.getId() == null) {
+        LOG.debug("REST request to partial update Agent partially : {}, {}", id, agentDTO);
+        if (agentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, agent.getId())) {
+        if (!Objects.equals(id, agentDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -118,60 +127,51 @@ public class AgentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Agent> result = agentRepository
-            .findById(agent.getId())
-            .map(existingAgent -> {
-                if (agent.getLogin() != null) {
-                    existingAgent.setLogin(agent.getLogin());
-                }
-                if (agent.getBalance() != null) {
-                    existingAgent.setBalance(agent.getBalance());
-                }
-
-                return existingAgent;
-            })
-            .map(agentRepository::save);
+        Optional<AgentDTO> result = agentService.partialUpdate(agentDTO);
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, agent.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, agentDTO.getId().toString())
         );
     }
 
     /**
      * {@code GET  /agents} : get all the agents.
      *
+     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of agents in body.
      */
     @GetMapping("")
-    public List<Agent> getAllAgents() {
-        LOG.debug("REST request to get all Agents");
-        return agentRepository.findAll();
+    public ResponseEntity<List<AgentDTO>> getAllAgents(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        LOG.debug("REST request to get a page of Agents");
+        Page<AgentDTO> page = agentService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
      * {@code GET  /agents/:id} : get the "id" agent.
      *
-     * @param id the id of the agent to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the agent, or with status {@code 404 (Not Found)}.
+     * @param id the id of the agentDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the agentDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Agent> getAgent(@PathVariable("id") Long id) {
+    public ResponseEntity<AgentDTO> getAgent(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Agent : {}", id);
-        Optional<Agent> agent = agentRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(agent);
+        Optional<AgentDTO> agentDTO = agentService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(agentDTO);
     }
 
     /**
      * {@code DELETE  /agents/:id} : delete the "id" agent.
      *
-     * @param id the id of the agent to delete.
+     * @param id the id of the agentDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAgent(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Agent : {}", id);
-        agentRepository.deleteById(id);
+        agentService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();

@@ -12,6 +12,8 @@ import com.devops.paylite.IntegrationTest;
 import com.devops.paylite.domain.Payment;
 import com.devops.paylite.domain.enumeration.PaymentStatus;
 import com.devops.paylite.repository.PaymentRepository;
+import com.devops.paylite.service.dto.PaymentDTO;
+import com.devops.paylite.service.mapper.PaymentMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -65,6 +67,9 @@ class PaymentResourceIT {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PaymentMapper paymentMapper;
 
     @Autowired
     private EntityManager em;
@@ -126,18 +131,22 @@ class PaymentResourceIT {
     void createPayment() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Payment
-        var returnedPayment = om.readValue(
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+        var returnedPaymentDTO = om.readValue(
             restPaymentMockMvc
-                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+                .perform(
+                    post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO))
+                )
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
-            Payment.class
+            PaymentDTO.class
         );
 
         // Validate the Payment in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedPayment = paymentMapper.toEntity(returnedPaymentDTO);
         assertPaymentUpdatableFieldsEquals(returnedPayment, getPersistedPayment(returnedPayment));
 
         insertedPayment = returnedPayment;
@@ -148,12 +157,13 @@ class PaymentResourceIT {
     void createPaymentWithExistingId() throws Exception {
         // Create the Payment with an existing ID
         payment.setId(1L);
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restPaymentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Payment in the database
@@ -168,9 +178,10 @@ class PaymentResourceIT {
         payment.setAccount(null);
 
         // Create the Payment, which fails.
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
 
         restPaymentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -184,9 +195,10 @@ class PaymentResourceIT {
         payment.setAmount(null);
 
         // Create the Payment, which fails.
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
 
         restPaymentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -200,9 +212,10 @@ class PaymentResourceIT {
         payment.setStatus(null);
 
         // Create the Payment, which fails.
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
 
         restPaymentMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -274,13 +287,14 @@ class PaymentResourceIT {
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .status(UPDATED_STATUS)
             .createdDate(UPDATED_CREATED_DATE);
+        PaymentDTO paymentDTO = paymentMapper.toDto(updatedPayment);
 
         restPaymentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedPayment.getId())
+                put(ENTITY_API_URL_ID, paymentDTO.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedPayment))
+                    .content(om.writeValueAsBytes(paymentDTO))
             )
             .andExpect(status().isOk());
 
@@ -295,13 +309,16 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restPaymentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, payment.getId())
+                put(ENTITY_API_URL_ID, paymentDTO.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(payment))
+                    .content(om.writeValueAsBytes(paymentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -315,13 +332,16 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPaymentMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(payment))
+                    .content(om.writeValueAsBytes(paymentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -335,9 +355,12 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPaymentMockMvc
-            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(payment)))
+            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(paymentDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Payment in the database
@@ -417,13 +440,16 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restPaymentMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, payment.getId())
+                patch(ENTITY_API_URL_ID, paymentDTO.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(payment))
+                    .content(om.writeValueAsBytes(paymentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -437,13 +463,16 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPaymentMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(payment))
+                    .content(om.writeValueAsBytes(paymentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -457,9 +486,14 @@ class PaymentResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         payment.setId(longCount.incrementAndGet());
 
+        // Create the Payment
+        PaymentDTO paymentDTO = paymentMapper.toDto(payment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPaymentMockMvc
-            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(payment)))
+            .perform(
+                patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(paymentDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Payment in the database

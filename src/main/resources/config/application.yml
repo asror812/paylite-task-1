@@ -90,6 +90,8 @@ management:
       application: ${spring.application.name}
 
 spring:
+  config:
+    import: 'optional:consul:'
   application:
     name: paylite
   docker:
