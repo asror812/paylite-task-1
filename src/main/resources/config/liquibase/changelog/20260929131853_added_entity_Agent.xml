@@ -15,7 +15,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="login" type="varchar(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_agent__login" />
+                <constraints nullable="false"/>
             </column>
             <column name="balance" type="bigint">
                 <constraints nullable="false" />

@@ -82,20 +82,6 @@ public class PaymentService {
         return paymentMapper.toDto(payment);
     }
 
-    /**
-     * Update a payment.
-     *
-     * @param paymentDTO the entity to create.
-     * @return the persisted entity.
-     */
-    @Transactional
-    public PaymentDTO update(PaymentDTO paymentDTO) {
-        LOG.debug("Request to update Payment : {}", paymentDTO);
-        Payment payment = paymentMapper.toEntity(paymentDTO);
-        payment = paymentRepository.save(payment);
-        return paymentMapper.toDto(payment);
-    }
-
     public Page<PaymentDTO> getOwn(Pageable pageable) {
         LOG.debug("Request to get all Own Payments");
 

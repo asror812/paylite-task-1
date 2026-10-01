@@ -61,10 +61,10 @@ class PaymentServiceTest {
         when(paymentProperties.getCommissionPercent()).thenReturn(BigDecimal.TEN);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PaymentDTO result = paymentService.create(new PaymentCreateRequestDto("agent2", 50L));
+        PaymentDTO result = paymentService.create(new PaymentCreateRequestDto("8600123412341234", 50L));
 
         assertEquals(PaymentStatus.PAID, result.getStatus());
-        assertEquals("agent2", result.getAccount());
+        assertEquals("8600123412341234", result.getAccount());
         assertEquals(50L, result.getAmount());
         assertEquals(5L, result.getCommissionAmount());
         assertEquals(55L, result.getTotalAmount());
@@ -81,7 +81,7 @@ class PaymentServiceTest {
         when(paymentProperties.getCommissionPercent()).thenReturn(BigDecimal.TEN);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PaymentDTO result = paymentService.create(new PaymentCreateRequestDto("998901234567", 50L));
+        PaymentDTO result = paymentService.create(new PaymentCreateRequestDto("8600123412341234", 50L));
 
         assertEquals(PaymentStatus.FAILED, result.getStatus());
         assertEquals(55L, result.getTotalAmount());
