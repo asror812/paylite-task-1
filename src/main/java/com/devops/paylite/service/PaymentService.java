@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class PaymentService {
 
@@ -88,10 +87,6 @@ public class PaymentService {
         String login = SecurityUtils.getCurrentUserLogin()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user login not found"));
 
-        Agent agent = agentRepository
-            .findByLogin(login)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
-
-        return paymentRepository.findAllByAgent_Login(agent.getLogin(), pageable).map(paymentMapper::toDto);
+        return paymentRepository.findAllByAgent_Login(login, pageable).map(paymentMapper::toDto);
     }
 }

@@ -15,6 +15,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Page<Payment> findAllByAgent_Login(String account, Pageable pageable);
-
-    Optional<Object> findByIdAndAgent_Login(Long id, @NotNull String login);
 }
