@@ -1,6 +1,7 @@
 package com.devops.paylite.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -24,8 +25,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -57,7 +60,7 @@ class PaymentServiceTest {
     void shouldCalculateCommissionAndDeductTotalAmount() {
         Agent agent = Agent.builder().login("agent1").balance(100L).build();
 
-        when(agentRepository.findByLogin("agent1")).thenReturn(Optional.of(agent));
+        when(agentRepository.findByLoginForUpdate("agent1")).thenReturn(Optional.of(agent));
         when(paymentProperties.getCommissionPercent()).thenReturn(BigDecimal.TEN);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -77,7 +80,7 @@ class PaymentServiceTest {
     @Test
     void shouldCreateFailedPaymentWithoutChangingBalanceWhenBalanceIsInsufficient() {
         Agent agent = Agent.builder().login("agent1").balance(54L).build();
-        when(agentRepository.findByLogin("agent1")).thenReturn(Optional.of(agent));
+        when(agentRepository.findByLoginForUpdate("agent1")).thenReturn(Optional.of(agent));
         when(paymentProperties.getCommissionPercent()).thenReturn(BigDecimal.TEN);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -89,5 +92,19 @@ class PaymentServiceTest {
 
         verify(agentRepository, never()).save(any(Agent.class));
         verify(paymentRepository).save(any(Payment.class));
+    }
+
+    @Test
+    void shouldRejectPaymentWhenTotalAmountOverflows() {
+        Agent agent = Agent.builder().login("agent1").balance(Long.MAX_VALUE).build();
+        when(agentRepository.findByLoginForUpdate("agent1")).thenReturn(Optional.of(agent));
+        when(paymentProperties.getCommissionPercent()).thenReturn(BigDecimal.TEN);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+            paymentService.create(new PaymentCreateRequestDto("8600123412341234", Long.MAX_VALUE))
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        verify(paymentRepository, never()).save(any(Payment.class));
     }
 }

@@ -40,12 +40,19 @@ public class AgentService {
         return new BalanceResponseDto(agent.getBalance());
     }
 
+    @Transactional
     public void topUp(Long id, TopUpRequestDto dto) {
         LOG.debug("Request to top up Payment : {}", id);
 
-        Agent agent = agentRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
+        Agent agent = agentRepository
+            .findByIdForUpdate(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
 
-        agent.setBalance(agent.getBalance() + dto.amount());
+        try {
+            agent.setBalance(Math.addExact(agent.getBalance(), dto.amount()));
+        } catch (ArithmeticException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Top-up amount is too large", exception);
+        }
         agentRepository.save(agent);
     }
 }

@@ -67,17 +67,28 @@ public class Payment implements Serializable {
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "Payment{" +
-            "id=" + getId() +
-            ", account='" + getAccount() + "'" +
-            ", amount=" + getAmount() +
-            ", commissionAmount=" + getCommissionAmount() +
-            ", totalAmount=" + getTotalAmount() +
-            ", status='" + getStatus() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            "}";
+        return (
+            "Payment{" +
+            "id=" +
+            getId() +
+            ", account='" +
+            getAccount() +
+            "'" +
+            ", amount=" +
+            getAmount() +
+            ", commissionAmount=" +
+            getCommissionAmount() +
+            ", totalAmount=" +
+            getTotalAmount() +
+            ", status='" +
+            getStatus() +
+            "'" +
+            ", createdDate='" +
+            getCreatedDate() +
+            "'" +
+            "}"
+        );
     }
 }

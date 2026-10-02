@@ -16,9 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class AgentServiceTest {
@@ -54,10 +56,23 @@ class AgentServiceTest {
 
         Agent agent = Agent.builder().id(1L).login("agent1").balance(0L).build();
 
-        Mockito.when(agentRepository.findById(1L)).thenReturn(Optional.of(agent));
+        Mockito.when(agentRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(agent));
         agentService.topUp(1L, new TopUpRequestDto(100L));
 
         assertEquals(100L, agent.getBalance());
         Mockito.verify(agentRepository).save(Mockito.any(Agent.class));
+    }
+
+    @Test
+    void shouldRejectTopUpWhenBalanceOverflows() {
+        Agent agent = Agent.builder().id(1L).login("agent1").balance(Long.MAX_VALUE).build();
+        Mockito.when(agentRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(agent));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+            agentService.topUp(1L, new TopUpRequestDto(1L))
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        Mockito.verify(agentRepository, Mockito.never()).save(Mockito.any(Agent.class));
     }
 }

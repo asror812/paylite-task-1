@@ -48,15 +48,11 @@ public class PaymentService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user login not found"));
 
         Agent agent = agentRepository
-            .findByLogin(login)
+            .findByLoginForUpdate(login)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent not found"));
 
-        long commissionAmount = BigDecimal.valueOf(dto.getAmount())
-            .multiply(paymentProperties.getCommissionPercent())
-            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
-            .longValueExact();
-
-        long totalAmount = dto.getAmount() + commissionAmount;
+        long commissionAmount = calculateCommission(dto.getAmount());
+        long totalAmount = calculateTotalAmount(dto.getAmount(), commissionAmount);
 
         PaymentStatus status = agent.getBalance() >= totalAmount ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
@@ -88,5 +84,24 @@ public class PaymentService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user login not found"));
 
         return paymentRepository.findAllByAgent_Login(login, pageable).map(paymentMapper::toDto);
+    }
+
+    private long calculateCommission(long amount) {
+        try {
+            return BigDecimal.valueOf(amount)
+                .multiply(paymentProperties.getCommissionPercent())
+                .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+                .longValueExact();
+        } catch (ArithmeticException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment amount is too large", exception);
+        }
+    }
+
+    private long calculateTotalAmount(long amount, long commissionAmount) {
+        try {
+            return Math.addExact(amount, commissionAmount);
+        } catch (ArithmeticException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment amount is too large", exception);
+        }
     }
 }
